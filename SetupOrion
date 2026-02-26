@@ -4070,9 +4070,7 @@ services:
       - "--certificatesresolvers.letsencryptresolver.acme.email=$email_ssl" ## Email para receber as notificações
       - "--log.level=DEBUG"
       - "--log.format=common"
-      - "--log.filePath=/var/log/traefik/traefik.log"
       - "--accesslog=true"
-      - "--accesslog.filepath=/var/log/traefik/access-log"
 
     volumes:
       - "vol_certificates:/etc/traefik/letsencrypt"
@@ -4090,6 +4088,7 @@ services:
         mode: host
 
     deploy:
+      mode: global
       placement:
         constraints:
           - node.role == manager
