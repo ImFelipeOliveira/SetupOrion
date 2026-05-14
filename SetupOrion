@@ -41229,6 +41229,7 @@ services:
         - traefik.http.routers.dokploy${1:+_$1}.tls.certresolver=letsencryptresolver
         - traefik.http.routers.dokploy${1:+_$1}.entrypoints=websecure
         - traefik.http.routers.dokploy${1:+_$1}.tls=true
+        - traefik.docker.network=$nome_rede_interna
 
 ## --------------------------- ORION --------------------------- ##
 
