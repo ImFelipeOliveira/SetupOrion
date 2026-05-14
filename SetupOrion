@@ -41012,7 +41012,7 @@ requisitar_outra_instalacao
 ferramenta_dokploy() {
 
 ## Verifica os recursos
-recursos 1 1 && continue || return
+recursos 2 2 && continue || return
 
 ## Limpa o terminal
 clear
@@ -41079,17 +41079,49 @@ while true; do
 done
 
 ## Mensagem de Passo
-echo -e "\e[97m• INICIANDO A INSTALAÇÃO DO DOKPLOY \e[33m[1/3]\e[0m"
+echo -e "\e[97m• INICIANDO A INSTALAÇÃO DO DOKPLOY \e[33m[1/5]\e[0m"
 echo ""
 sleep 1
 
 telemetria Dokploy iniciado
 
-echo -e "\e[97m• INSTALANDO DOKPLOY \e[33m[2/3]\e[0m"
+## Mensagem de Passo
+echo -e "\e[97m• PREPARANDO INFRAESTRUTURA DO DOKPLOY \e[33m[2/5]\e[0m"
 echo ""
 sleep 1
 
-dokploy_secret=$(openssl rand -hex 32)
+## Gerando senhas seguras
+dokploy_pg_pass=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-32)
+dokploy_auth_secret=$(openssl rand -hex 32)
+
+## Criando diretório de configuração do Dokploy
+mkdir -p /etc/dokploy > /dev/null 2>&1
+chmod 777 /etc/dokploy > /dev/null 2>&1
+
+## Criando rede overlay dokploy-network (usada internamente pelo Dokploy para apps)
+docker network create --driver overlay --attachable dokploy-network > /dev/null 2>&1 || true
+echo "1/4 - [ OK ] - Rede dokploy-network criada"
+
+## Criando Docker Secrets
+echo "$dokploy_pg_pass" | docker secret create dokploy_postgres_password - > /dev/null 2>&1 || true
+echo "2/4 - [ OK ] - Secret dokploy_postgres_password criado"
+
+echo "$dokploy_auth_secret" | docker secret create dokploy_auth_secret - > /dev/null 2>&1 || true
+echo "3/4 - [ OK ] - Secret dokploy_auth_secret criado"
+
+## Pegando IP do servidor para ADVERTISE_ADDR
+advertise_addr=$(ip addr show | grep -E "inet (192\.168\.|10\.|172\.1[6-9]\.|172\.2[0-9]\.|172\.3[0-1]\.)" | head -n1 | awk '{print $2}' | cut -d/ -f1)
+if [ -z "$advertise_addr" ]; then
+    advertise_addr=$(curl -4s --connect-timeout 5 https://ifconfig.io 2>/dev/null)
+fi
+echo "4/4 - [ OK ] - Advertise Address: $advertise_addr"
+
+echo ""
+
+## Mensagem de Passo
+echo -e "\e[97m• INSTALANDO DOKPLOY \e[33m[3/5]\e[0m"
+echo ""
+sleep 1
 
 ## Criando a stack dokploy.yaml
 cat > dokploy${1:+_$1}.yaml <<EOL
@@ -41098,23 +41130,83 @@ services:
 
 ## --------------------------- ORION --------------------------- ##
 
+  ## 🐘 PostgreSQL 16 - Banco de dados do Dokploy
+  dokploy-postgres:
+    image: postgres:16
+
+    environment:
+      - POSTGRES_USER=dokploy
+      - POSTGRES_DB=dokploy
+      - POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password
+
+    secrets:
+      - source: dokploy_postgres_password
+        target: /run/secrets/postgres_password
+
+    volumes:
+      - dokploy${1:+_$1}_postgres_data:/var/lib/postgresql/data
+
+    networks:
+      - dokploy-network
+
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+
+  ## 🔴 Redis 7 - Cache do Dokploy
+  dokploy-redis:
+    image: redis:7
+
+    volumes:
+      - dokploy${1:+_$1}_redis_data:/data
+
+    networks:
+      - dokploy-network
+
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+
+  ## 🚀 Dokploy - PaaS Self-Hosted
   dokploy${1:+_$1}:
     image: dokploy/dokploy:latest
 
+    secrets:
+      - source: dokploy_postgres_password
+        target: /run/secrets/postgres_password
+      - source: dokploy_auth_secret
+        target: /run/secrets/dokploy_auth_secret
+
     volumes:
-      - dokploy${1:+_$1}_data:/etc/dokploy
+      - /etc/dokploy:/etc/dokploy
       - /var/run/docker.sock:/var/run/docker.sock
-      - /etc/localtime:/etc/localtime:ro
+      - dokploy${1:+_$1}_docker:/root/.docker
 
     networks:
-      - $nome_rede_interna ## Nome da rede interna
+      - dokploy-network
+      - $nome_rede_interna
 
     environment:
-    ## 🌐 Base URL
-      - DOKPLOY_DOMAIN=https://$url_dokploy
+    ## 🔐 Credenciais via Docker Secrets
+      - POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password
+      - BETTER_AUTH_SECRET_FILE=/run/secrets/dokploy_auth_secret
 
-    ## 🔐 Secret Key
-      - SECRET_KEY=$dokploy_secret
+    ## 🌐 Advertise Address
+      - ADVERTISE_ADDR=$advertise_addr
 
     ## 🕒 Fuso Horário
       - TZ=America/Sao_Paulo
@@ -41140,15 +41232,30 @@ services:
 
 ## --------------------------- ORION --------------------------- ##
 
-volumes:
-  dokploy${1:+_$1}_data:
+secrets:
+  dokploy_postgres_password:
     external: true
-    name: dokploy${1:+_$1}_data
+  dokploy_auth_secret:
+    external: true
+
+volumes:
+  dokploy${1:+_$1}_postgres_data:
+    external: true
+    name: dokploy${1:+_$1}_postgres_data
+  dokploy${1:+_$1}_redis_data:
+    external: true
+    name: dokploy${1:+_$1}_redis_data
+  dokploy${1:+_$1}_docker:
+    external: true
+    name: dokploy${1:+_$1}_docker
 
 networks:
-  $nome_rede_interna: ## Nome da rede interna
+  dokploy-network:
     external: true
-    name: $nome_rede_interna ## Nome da rede interna
+    name: dokploy-network
+  $nome_rede_interna:
+    external: true
+    name: $nome_rede_interna
 
 EOL
 if [ $? -eq 0 ]; then
@@ -41162,15 +41269,22 @@ STACK_NAME="dokploy${1:+_$1}"
 stack_editavel # > /dev/null 2>&1
 
 ## Mensagem de Passo
-echo -e "\e[97m• VERIFICANDO SERVIÇO \e[33m[3/3]\e[0m"
+echo -e "\e[97m• VERIFICANDO SERVIÇO \e[33m[4/5]\e[0m"
 echo ""
 sleep 1
 
 ## Baixando imagens:
 pull dokploy/dokploy:latest
+pull postgres:16
+pull redis:7
 
 ## Usa o serviço wait_stack para verificar se o serviço esta online
 wait_stack dokploy${1:+_$1}_dokploy${1:+_$1}
+
+## Mensagem de Passo
+echo -e "\e[97m• FINALIZANDO INSTALAÇÃO \e[33m[5/5]\e[0m"
+echo ""
+sleep 1
 
 telemetria Dokploy finalizado
 
@@ -41184,6 +41298,8 @@ Dominio do Dokploy: https://$url_dokploy
 Usuario: Precisa de criar no primeiro acesso do Dokploy
 
 Senha: Precisa de criar no primeiro acesso do Dokploy
+
+Senha Postgres: $dokploy_pg_pass
 EOL
 cd
 cd
