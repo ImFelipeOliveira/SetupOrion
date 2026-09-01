@@ -4065,7 +4065,7 @@ services:
 ## --------------------------- ORION --------------------------- ##
 
   traefik:
-    image: traefik:v3.5.3
+    image: traefik:v3.7.12
     command:
       - "--api.dashboard=true"
       - "--providers.swarm=true"
@@ -4153,9 +4153,9 @@ echo ""
 sleep 1
 
 ## Em teste contra Rate Limit do Docker Hub
-pull ghcr.io/traefik/traefik:v3.5.3
+pull ghcr.io/traefik/traefik:v3.7.12
 
-docker tag ghcr.io/traefik/traefik:v3.5.3 traefik/traefik:v3.5.3
+docker tag ghcr.io/traefik/traefik:v3.7.12 traefik/traefik:v3.7.12
 
 ## Usa o serviço wait_stack "traefik" para verificar se o serviço esta online
 wait_stack "traefik"
@@ -12026,7 +12026,7 @@ services:
 ## --------------------------- ORION --------------------------- ##
 
   mautic_web${1:+_$1}:
-    image: mautic/mautic:5.2.8-apache ## Versão do Mautic
+    image: mautic/mautic:5.2.11-apache ## Versão do Mautic
 
     volumes:
       - mautic${1:+_$1}_config:/var/www/html/config
@@ -12078,7 +12078,7 @@ services:
 ## --------------------------- ORION --------------------------- ##
 
   mautic_worker${1:+_$1}:
-    image: mautic/mautic:5.2.8-apache ## Versão do Mautic
+    image: mautic/mautic:5.2.11-apache ## Versão do Mautic
 
     volumes:
       - mautic${1:+_$1}_config:/var/www/html/config
@@ -12122,7 +12122,7 @@ services:
 ## --------------------------- ORION --------------------------- ##
 
   mautic_cron${1:+_$1}:
-    image: mautic/mautic:5.2.8-apache ## Versão do Mautic
+    image: mautic/mautic:5.2.11-apache ## Versão do Mautic
 
     volumes:
       - mautic${1:+_$1}_config:/var/www/html/config
@@ -12209,7 +12209,7 @@ echo ""
 sleep 1
 
 ## Baixando imagens:
-pull mautic/mautic:5.2.8-apache
+pull mautic/mautic:5.2.11-apache
 
 ## Usa o serviço wait_stack "mautic" para verificar se o serviço esta online
 wait_stack mautic${1:+_$1}_mautic_web${1:+_$1} mautic${1:+_$1}_mautic_worker${1:+_$1} mautic${1:+_$1}_mautic_cron${1:+_$1}
@@ -23427,7 +23427,7 @@ services:
 ## --------------------------- ORION --------------------------- ##
 
   openproject${1:+_$1}_app:
-    image: openproject/openproject:16
+    image: openproject/openproject:17
 
     volumes:
       - openproject${1:+_$1}_pgdata:/var/openproject/pgdata
@@ -23602,7 +23602,7 @@ echo ""
 sleep 1
 
 ## Baixando imagens:
-pull postgres:17 redis:latest openproject/openproject:16
+pull postgres:17 redis:latest openproject/openproject:17
 
 ## Usa o serviço wait_stack "openproject" para verificar se o serviço esta online
 wait_stack openproject${1:+_$1}_openproject${1:+_$1}_db openproject${1:+_$1}_openproject${1:+_$1}_redis openproject${1:+_$1}_openproject${1:+_$1}_app
@@ -28518,7 +28518,7 @@ services:
 ## --------------------------- ORION --------------------------- ##
 
   clickhouse${1:+_$1}:
-    image: clickhouse/clickhouse-server:23.8.8.20-alpine
+    image: clickhouse/clickhouse-server:25.12.11.4-alpine
 
     volumes:
       - clickhouse${1:+_$1}_data:/var/lib/clickhouse
@@ -28592,7 +28592,7 @@ echo ""
 sleep 1
 
 ## Baixando imagens:
-pull clickhouse/clickhouse-server:23.8.8.20-alpine
+pull clickhouse/clickhouse-server:25.12.11.4-alpine
 
 ## Usa o serviço wait_clickhouse para verificar se o serviço esta online
 wait_stack clickhouse${1:+_$1}_clickhouse${1:+_$1}
@@ -31279,7 +31279,7 @@ services:
 ## --------------------------- ORION --------------------------- ##
 
   erpnext${1:+_$1}_frontend:
-    image: frappe/erpnext:v15.49.3
+    image: frappe/erpnext:v15.120.0
     command: ["nginx-entrypoint.sh"]
 
     volumes:
@@ -31327,7 +31327,7 @@ services:
 ## --------------------------- ORION --------------------------- ##
 
   erpnext${1:+_$1}_backend:
-    image: frappe/erpnext:v15.49.3
+    image: frappe/erpnext:v15.120.0
 
     volumes:
       - erpnext${1:+_$1}_sites:/home/frappe/frappe-bench/sites
@@ -31359,7 +31359,7 @@ services:
 ## --------------------------- ORION --------------------------- ##
 
   erpnext${1:+_$1}_configurator:
-    image: frappe/erpnext:v15.49.3
+    image: frappe/erpnext:v15.120.0
 
     volumes:
       - erpnext${1:+_$1}_sites:/home/frappe/frappe-bench/sites
@@ -31398,7 +31398,7 @@ services:
 ## --------------------------- ORION --------------------------- ##
       
   erpnext${1:+_$1}_websocket:
-    image: frappe/erpnext:v15.49.3
+    image: frappe/erpnext:v15.120.0
     command: ["node", "/home/frappe/frappe-bench/apps/frappe/socketio.js"]
 
     volumes:
@@ -31577,7 +31577,7 @@ echo ""
 sleep 1
 
 ## Baixando imagens:
-pull frappe/erpnext:v15.49.3 mariadb:10.6 redis:latest
+pull frappe/erpnext:v15.120.0 mariadb:10.6 redis:latest
 
 sleep 45
 
@@ -37218,7 +37218,7 @@ services:
 ## --------------------------- ORION --------------------------- ##
 
   heyform${1:+_$1}_app:
-    image: heyform/community-edition:v0.1.0
+    image: heyform/community-edition:v3.0.2
 
     volumes:
       - heyform${1:+_$1}_uploads:/app/static/upload
@@ -37232,6 +37232,7 @@ services:
       - APP_LISTEN_PORT=9157
       - APP_LISTEN_HOSTNAME=0.0.0.0
       - APP_HOMEPAGE_URL=https://$url_heyform
+      - TRUST_PROXY=true ## Atrás do Traefik
       - APP_DISABLE_REGISTRATION=false ## false = Permite registro de novos usuarios
       
     ## 🍪 Cookies e Sessões
@@ -37365,7 +37366,7 @@ echo ""
 sleep 1
 
 ## Baixando imagens:
-pull redis:latest heyform/community-edition:v0.1.0
+pull redis:latest heyform/community-edition:v3.0.2
 
 ## Usa o serviço wait_stack para verificar se o serviço esta online
 wait_stack heyform${1:+_$1}_heyform${1:+_$1}_redis heyform${1:+_$1}_heyform${1:+_$1}_app
@@ -38372,7 +38373,7 @@ services:
 ## --------------------------- ORION --------------------------- ##
 
   netbox${1:+_$1}_app:
-    image: docker.io/netboxcommunity/netbox:v4.4-3.4.2
+    image: docker.io/netboxcommunity/netbox:v4.6.9-5.0.2
 
     volumes:
       - netbox${1:+_$1}_media_files:/opt/netbox/netbox/media:rw
@@ -38414,6 +38415,7 @@ services:
       - WEBHOOKS_ENABLED=true
       - METRICS_ENABLED=false
       - SKIP_SUPERUSER=false
+      - SUPERUSER_PASSWORD=admin ## Obrigatório a partir do netbox-docker 5.0 (sem default admin/admin)
 
     ## 📧 Configuração de SMTP
       #- EMAIL_FROM=email@dominio.com
@@ -38450,7 +38452,7 @@ services:
 ## --------------------------- ORION --------------------------- ##
 
   netbox${1:+_$1}_worker:
-    image: docker.io/netboxcommunity/netbox:v4.4-3.4.2
+    image: docker.io/netboxcommunity/netbox:v4.6.9-5.0.2
     command:
       - /opt/netbox/venv/bin/python
       - /opt/netbox/netbox/manage.py
@@ -38496,6 +38498,7 @@ services:
       - WEBHOOKS_ENABLED=true
       - METRICS_ENABLED=false
       - SKIP_SUPERUSER=false
+      - SUPERUSER_PASSWORD=admin ## Obrigatório a partir do netbox-docker 5.0 (sem default admin/admin)
 
     ## 📧 Configuração de SMTP
       #- EMAIL_FROM=email@dominio.com
@@ -38655,7 +38658,7 @@ echo ""
 sleep 1
 
 ## Baixando imagens:
-pull docker.io/postgres:17-alpine docker.io/valkey/valkey:8.1-alpine docker.io/netboxcommunity/netbox:v4.4-3.4.2
+pull docker.io/postgres:17-alpine docker.io/valkey/valkey:8.1-alpine docker.io/netboxcommunity/netbox:v4.6.9-5.0.2
 
 ## Usa o serviço wait_stack para verificar se o serviço esta online
 wait_stack netbox${1:+_$1}_netbox${1:+_$1}_db netbox${1:+_$1}_netbox${1:+_$1}_redis netbox${1:+_$1}_netbox${1:+_$1}_redis_cache netbox${1:+_$1}_netbox${1:+_$1}_app  netbox${1:+_$1}_netbox${1:+_$1}_worker
@@ -42307,7 +42310,7 @@ services:
 ## --------------------------- ORION --------------------------- ##
 
   traefik:
-    image: traefik:v3.5.3
+    image: traefik:v3.7.12
     command:
       - "--api.dashboard=true"
       - "--providers.swarm=true"
@@ -42491,7 +42494,7 @@ services:
   ## --------------------------- ORION --------------------------- ##
 
   traefik:
-    image: traefik:v3.5.3
+    image: traefik:v3.7.12
     command:
       - "--api.dashboard=true"
       - "--providers.swarm=true"
