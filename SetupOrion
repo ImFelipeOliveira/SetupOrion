@@ -4082,9 +4082,15 @@ services:
       - "--certificatesresolvers.letsencryptresolver.acme.httpchallenge.entrypoint=web"
       - "--certificatesresolvers.letsencryptresolver.acme.storage=/etc/traefik/letsencrypt/acme.json"
       - "--certificatesresolvers.letsencryptresolver.acme.email=$email_ssl" ## Email para receber as notificações
-      - "--log.level=DEBUG"
+      - "--log.level=ERROR"
       - "--log.format=common"
       - "--accesslog=true"
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
 
     volumes:
       - "vol_certificates:/etc/traefik/letsencrypt"
@@ -42327,11 +42333,17 @@ services:
       - "--certificatesresolvers.letsencryptresolver.acme.httpchallenge.entrypoint=web"
       - "--certificatesresolvers.letsencryptresolver.acme.storage=/etc/traefik/letsencrypt/acme.json"
       - "--certificatesresolvers.letsencryptresolver.acme.email=$email_ssl" ## Email para receber as notificações
-      - "--log.level=DEBUG"
+      - "--log.level=ERROR"
       - "--log.format=common"
       - "--log.filePath=/var/log/traefik/traefik.log"
       - "--accesslog=true"
       - "--accesslog.filepath=/var/log/traefik/access-log"
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
 
     volumes:
       - "vol_certificates:/etc/traefik/letsencrypt"
@@ -42512,8 +42524,14 @@ services:
       - "--certificatesresolvers.letsencryptresolver.acme.httpchallenge.entrypoint=web"
       - "--certificatesresolvers.letsencryptresolver.acme.storage=/etc/traefik/letsencrypt/acme.json"
       - "--certificatesresolvers.letsencryptresolver.acme.email=$email_ssl" ## Email para receber as notificações
-      - "--log.level=DEBUG"
+      - "--log.level=ERROR"
       - "--accesslog=true"
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
 
     volumes:
       - "vol_certificates:/etc/traefik/letsencrypt"
